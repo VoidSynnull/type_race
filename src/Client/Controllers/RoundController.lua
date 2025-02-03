@@ -5,6 +5,9 @@
 ]]
 
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer.PlayerGui
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage.Packages
@@ -12,21 +15,38 @@ local Knit = require(Packages.Knit)
 local RoundController = Knit.CreateController({ Name = script.Name })
 
 function RoundController:KnitStart()
+	local hud = PlayerGui:WaitForChild("HUD")
+	self.LobbyMain = hud:WaitForChild("LobbyMain")
+	local joinRace: TextButton = self.LobbyMain:WaitForChild("JoinRace")
+
+	self.InQueue = false
+	joinRace.MouseButton1Click:Connect(function()
+		self.InQueue = not self.InQueue
+		print(self.RoundService:JoinOrLeaveWaitingQueue(self.InQueue))
+	end)
+
 	self.RoundService.RaceStarted:Connect(function()
+		self:ToggleLobbyUI(false)
 		self.CameraController:MoveCameraToRandomSpot()
 		self.TypingController:ToggleTypingUI(true)
 	end)
 	self.RoundService.RaceEnded:Connect(function()
-		self.RoundService:CheckPlayerString(self.TypingController:GetTypedString())
+		self.TypingService:CheckPlayerString(self.TypingController:GetTypedString())
 		self.TypingController:ToggleTypingUI(false)
-		self.CameraController:ResetCamera()
+		self:ToggleLobbyUI(true)
+		--self.CameraController:ResetCamera()
 	end)
+end
+
+function RoundController:ToggleLobbyUI(toggle: boolean)
+	self.LobbyMain.Visible = toggle
 end
 
 function RoundController:KnitInit()
 	self.RoundService = Knit.GetService("RoundService")
 	self.CameraController = Knit.GetController("CameraController")
 	self.TypingController = Knit.GetController("TypingController")
+	self.TypingService = Knit.GetService("TypingService")
 end
 
 return RoundController

@@ -32,9 +32,40 @@ function TypingService:CheckPlayerInputAgainstActiveWords(playerString: string)
 	end
 end
 
+function TypingService:CheckForWin(player: Player, playerString: string)
+	if playerString == self.ActiveString then
+		print(player.Name .. " won.")
+		self.RoundService:EndRace()
+		return true
+	else
+		return false
+	end
+end
+
 function TypingService:CalculateWPM(typedString: string, seconds: number)
 	local wpm = (string.len(typedString) / 5) / (seconds / 60)
 	print(wpm)
+end
+
+function TypingService:CheckPlayerString(player: Player, playerString: string)
+	print(playerString, string.sub(self:GetRoundString(), 1, string.len(playerString)))
+	if playerString ~= string.sub(self:GetRoundString(), 1, string.len(playerString)) then
+		print("CHEATER DETECTED: " .. player.Name)
+		return false
+	else
+		print(player.Name .. " did not cheat")
+		local wpm = self:CalculateWPM(playerString, self.RoundService.RaceTime)
+		self.RoundService:AddPlayerResult(player, { wpm })
+		return true
+	end
+end
+
+-- client
+function TypingService.Client:CheckPlayerString(player: Player, playerString: string)
+	return self.Server:CheckPlayerString(player, playerString)
+end
+function TypingService.Client:CheckForWin(player: Player, playerString: string)
+	return self.Server:CheckForWin(player, playerString)
 end
 
 function TypingService:KnitInit()

@@ -15,7 +15,7 @@ local Data = ServerStorage:WaitForChild("Data")
 local WordDB = require(Data.WordDB)
 
 local NUM_WORDS = {
-	[Enums.RaceLevels.EASY] = 25,
+	[Enums.RaceLevels.EASY] = 5,
 	[Enums.RaceLevels.MEDIUM] = 50,
 	[Enums.RaceLevels.HARD] = 100,
 }

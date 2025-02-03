@@ -12,8 +12,6 @@ local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
 
 local LocalPlayer = Players.LocalPlayer
-local BASE_WALKSPEED = 2
-local WRONG_DEDUCTION = 2
 local CHAIN_MODIFER = 0.4
 
 local TypingController = Knit.CreateController({ Name = script.Name })
@@ -52,10 +50,6 @@ function TypingController:SetUpUI()
 	self.Main.Visible = false
 end
 
-function TypingController:AdjustSpeed()
-	local human = LocalPlayer.Character.Humanoid
-	human.WalkSpeed = BASE_WALKSPEED + (BASE_WALKSPEED * (self.CurrentChain * CHAIN_MODIFER))
-end
 function TypingController:KnitInit()
 	self.TypingService = Knit.GetService("TypingService")
 
@@ -129,10 +123,12 @@ function TypingController:CheckInputAgainstCurrentCharacter(currentInput: string
 		else
 			self.CurrentChain = 0
 		end
-		self:AdjustSpeed()
 	end
 
 	if self.CurrentIndex == self.MaxIndex then
+		self.TypingService:CheckForWin(self.TypedString):andThen(function(winner: boolean)
+			print("winner: " .. tostring(winner))
+		end)
 	end
 end
 
