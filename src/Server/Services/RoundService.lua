@@ -15,6 +15,7 @@ local RoundService = Knit.CreateService({
 	Client = {
 		PlayerJoined = Knit.CreateSignal(),
 		RaceStarted = Knit.CreateSignal(),
+		CollectRaceResults = Knit.CreateSignal(),
 		RaceEnded = Knit.CreateSignal(),
 	},
 })
@@ -54,15 +55,14 @@ function RoundService:EndRace()
 	end
 	self.RaceEndTime = tick()
 	self.RaceTime = self.RaceEndTime - self.RaceStartTime
-	print(self.RaceTime)
-	print("end race")
-	self.RaceActive = false
-	self.Client.RaceEnded:FireAll()
+	self.Client.CollectRaceResults:FireAll()
 	self:VerfiyResults()
+	print(self.RaceResults)
+	self.Client.RaceEnded:FireAll(self.RaceResults)
+	self.RaceActive = false
 end
 
 function RoundService:VerfiyResults()
-	table.clear({ self.RaceResults })
 	print(#self.RaceResults, #self.ActivePlayers)
 	while #self.RaceResults < #self.ActivePlayers do
 		task.wait(1)
@@ -72,6 +72,7 @@ function RoundService:VerfiyResults()
 end
 
 function RoundService:StartRace()
+	table.clear(self.RaceResults)
 	self.RaceActive = true
 	self.ActivePlayers = table.clone(self.WaitingPlayers)
 	self.RaceStartTime = tick()
@@ -84,8 +85,13 @@ function RoundService:KnitInit()
 	self.CurrencyService = Knit.GetService("CurrencyService")
 end
 
-function RoundService:AddPlayerResult(player: Player, results)
-	table.insert(self.RaceResults, { player, results })
+function RoundService:AddPlayerResult(player: Player, wpm)
+	local playerResults = {
+		Placement = "?",
+		PlayerName = player.Name,
+		WPM = wpm,
+	}
+	table.insert(self.RaceResults, playerResults)
 end
 
 -- client

@@ -26,15 +26,13 @@ function RoundController:KnitStart()
 	end)
 
 	self.RoundService.RaceStarted:Connect(function()
+		self.InQueue = false
 		self:ToggleLobbyUI(false)
-		self.CameraController:MoveCameraToRandomSpot()
 		self.TypingController:ToggleTypingUI(true)
 	end)
+
 	self.RoundService.RaceEnded:Connect(function()
-		self.TypingService:CheckPlayerString(self.TypingController:GetTypedString())
 		self.TypingController:ToggleTypingUI(false)
-		self:ToggleLobbyUI(true)
-		--self.CameraController:ResetCamera()
 	end)
 end
 
@@ -44,7 +42,6 @@ end
 
 function RoundController:KnitInit()
 	self.RoundService = Knit.GetService("RoundService")
-	self.CameraController = Knit.GetController("CameraController")
 	self.TypingController = Knit.GetController("TypingController")
 	self.TypingService = Knit.GetService("TypingService")
 end

@@ -42,9 +42,9 @@ function TypingService:CheckForWin(player: Player, playerString: string)
 	end
 end
 
-function TypingService:CalculateWPM(typedString: string, seconds: number)
+function TypingService:CalculateWPM(typedString: string, seconds: number): number
 	local wpm = (string.len(typedString) / 5) / (seconds / 60)
-	print(wpm)
+	return wpm
 end
 
 function TypingService:CheckPlayerString(player: Player, playerString: string)
@@ -55,7 +55,8 @@ function TypingService:CheckPlayerString(player: Player, playerString: string)
 	else
 		print(player.Name .. " did not cheat")
 		local wpm = self:CalculateWPM(playerString, self.RoundService.RaceTime)
-		self.RoundService:AddPlayerResult(player, { wpm })
+		print("WPM: " .. tostring(wpm))
+		self.RoundService:AddPlayerResult(player, wpm)
 		return true
 	end
 end

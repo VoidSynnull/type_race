@@ -14,7 +14,7 @@ local Knit = require(Packages.Knit)
 
 local LocalPlayer = Players.LocalPlayer
 local CHAIN_MODIFER = 0.4
-
+local DEFAULT_STYLE = "<b><stroke color='#fdcb01' joins='round' thickness='4'>|</stroke></b>"
 local TypingController = Knit.CreateController({ Name = script.Name })
 
 function TypingController:KnitStart()
@@ -22,8 +22,15 @@ function TypingController:KnitStart()
 	self.TypedString = ""
 	self.CurrentChain = 0
 	self:SetUpUI()
+	self:SetFirstCharacterStyle()
 end
 
+function TypingController:SetFirstCharacterStyle(style: string)
+	if not style then
+		style = DEFAULT_STYLE
+	end
+	self.FirstCharStyle = string.split(style, "|")
+end
 function TypingController:SetUpUI()
 	local hud = LocalPlayer.PlayerGui:WaitForChild("HUD")
 	self.Main = hud:WaitForChild("TypingMain")
@@ -34,11 +41,7 @@ function TypingController:SetUpUI()
 	local tweenInfo: TweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In, -1, true)
 	self.ArrowTween =
 		TweenService:Create(self.ActiveCharacterArrow, tweenInfo, { Position = UDim2.fromScale(0.505, 2) })
-	self.ArrowTween.Completed:Connect(function()
-		print("asdasdasdasd")
-	end)
 	self.ArrowTween:Play()
-	print("start tween")
 	--self.InputText:CaptureFocus()
 	self.InputText:GetPropertyChangedSignal("Text"):Connect(function()
 		if self.InputText.Text == "" or self.ActiveString == "" then
@@ -65,19 +68,23 @@ function TypingController:KnitInit()
 	self.TypingService = Knit.GetService("TypingService")
 
 	self.TypingService.StringGenerated:Connect(function(activeString: string)
+		self.TypedString = ""
 		self.ActiveString = activeString
 		self.CurrentIndex = 1
 		self.MaxIndex = string.len(self.ActiveString) + 1
 		self.ActiveStringTextLabel.Text = self.ActiveString
 
-		self:BoldActiveLetter()
-	end)
+		self.CompletedActiveStringTextLabel.Text = ""
 
-	self:SetUpUI()
+		self:ApplyFirstCharStyle()
+		--self:StrokeActiveLetter()
+	end)
 end
 
-function TypingController:BoldActiveLetter()
-	local firstChar = "<b>" .. string.sub(self.ActiveStringTextLabel.Text, 1, 1) .. "</b>"
+function TypingController:ApplyFirstCharStyle()
+	local firstChar = self.FirstCharStyle[1]
+		.. string.sub(self.ActiveStringTextLabel.Text, 1, 1)
+		.. self.FirstCharStyle[2]
 	local restOfString = string.sub(self.ActiveStringTextLabel.Text, 2, string.len(self.ActiveStringTextLabel.Text))
 	self.ActiveStringTextLabel.Text = firstChar .. restOfString
 end
@@ -90,19 +97,7 @@ function TypingController:MoveCharacterToCompletedLabel()
 		string.sub(self.ActiveStringTextLabel.Text, 2, string.len(self.ActiveStringTextLabel.Text))
 end
 
-function TypingController:BoldActiveLetterOld()
-	if string.find(self.ActiveStringTextLabel.Text, "<b>") then
-		--self.ActiveStringTextLabel.Text = string.find(self.ActiveStringTextLabel.Text, "<b>")
-	end
-	local firstChar = "<b>" .. string.sub(self.ActiveStringTextLabel.Text, 1, 1) .. "</b>"
-	local completedString = "<font color='#6b6b6b'>"
-		.. string.sub(self.ActiveString, 1, self.CurrentIndex - 1)
-		.. "</font>"
-	local restOfString = string.sub(self.ActiveString, self.CurrentIndex + 1, string.len(self.ActiveString))
-	self.ActiveStringTextLabel.Text = completedString .. firstChar .. restOfString
-end
-
-function TypingController:RemoveBold()
+function TypingController:RemoveFirstCharStyle()
 	self.ActiveStringTextLabel.Text = self.ActiveStringTextLabel.ContentText
 end
 
@@ -128,9 +123,9 @@ function TypingController:CheckInputAgainstCurrentCharacter(currentInput: string
 			self.CurrentIndex += 1
 			self.CurrentChain += 1
 			self.TypedString = self.TypedString .. character
-			self:RemoveBold()
+			self:RemoveFirstCharStyle()
 			self:MoveCharacterToCompletedLabel()
-			self:BoldActiveLetter()
+			self:ApplyFirstCharStyle()
 		else
 			self.CurrentChain = 0
 		end
