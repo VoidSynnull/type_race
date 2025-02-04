@@ -6,6 +6,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local Packages = ReplicatedStorage.Packages
@@ -27,6 +28,17 @@ function TypingController:SetUpUI()
 	local hud = LocalPlayer.PlayerGui:WaitForChild("HUD")
 	self.Main = hud:WaitForChild("TypingMain")
 	self.InputText = self.Main:WaitForChild("InputText")
+	local activeStringFrame = self.Main:WaitForChild("ActiveStringFrame")
+	self.ActiveCharacterArrow = activeStringFrame:WaitForChild("ActiveCharacterArrow")
+
+	local tweenInfo: TweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In, -1, true)
+	self.ArrowTween =
+		TweenService:Create(self.ActiveCharacterArrow, tweenInfo, { Position = UDim2.fromScale(0.505, 2) })
+	self.ArrowTween.Completed:Connect(function()
+		print("asdasdasdasd")
+	end)
+	self.ArrowTween:Play()
+	print("start tween")
 	--self.InputText:CaptureFocus()
 	self.InputText:GetPropertyChangedSignal("Text"):Connect(function()
 		if self.InputText.Text == "" or self.ActiveString == "" then
@@ -43,7 +55,6 @@ function TypingController:SetUpUI()
 		end
 	end)
 
-	local activeStringFrame = self.Main:WaitForChild("ActiveStringFrame")
 	self.ActiveStringTextLabel = activeStringFrame:WaitForChild("ActiveString")
 	self.CompletedActiveStringTextLabel = activeStringFrame:WaitForChild("CompletedActiveString")
 	self.ActiveStringTextLabel.RichText = true
