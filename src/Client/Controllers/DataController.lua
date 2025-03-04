@@ -138,7 +138,6 @@ function DataController:KnitStart()
 			end
 			task.wait(1)
 		until self._profileReplica
-		print("Got profile replica!!")
 		self.ReplicaFoundSignal:Fire(self._profileReplica)
 	end
 end

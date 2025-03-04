@@ -6,13 +6,13 @@
 export type ZombieAnimations = {
 	Attack: string,
 }
-export type ZombieData = {
-	Attack: number,
-	Word: string,
-	AttackSpeed: number,
-	Speed: number,
-	Animations: ZombieAnimations,
-	MoveTo: RBXScriptConnection,
+export type RaceResults = {
+	TypedString: string,
+	Incorrect: number,
+	Chain: number,
+	WPM: number,
+	PlayerName: string,
+	Placement: number,
 }
 export type AnimationPlayer = {
 	PlayTrack: (
@@ -26,9 +26,4 @@ export type AnimationPlayer = {
 
 	GetTrack: (self: AnimationPlayer, TrackName: string) -> AnimationTrack,
 }
-export type Zombie = {
-	Data: ZombieData,
-	AnimationPlayer: AnimationPlayer,
-}
-
 return nil

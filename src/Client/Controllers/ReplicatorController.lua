@@ -25,7 +25,6 @@ function ReplicatorController:KnitStart()
 	-- request initial data, now that everything is hooked up
 	ReplicaController.InitialDataReceivedSignal:Connect(function()
 		self._initialDataReceived = true
-		print("received data")
 	end)
 	ReplicaController.RequestData()
 end
@@ -41,7 +40,6 @@ function ReplicatorController:KnitInit()
 		ReplicaController.ReplicaOfClassCreated(v, function(replica)
 			table.insert(self[v .. "Replicas"], replica)
 			self[v .. "Replicated"]:Fire(replica)
-			print("[ReplicatorController] ReplicaOfClassCreated " .. v)
 		end)
 	end
 end

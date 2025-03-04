@@ -128,7 +128,7 @@ function AnalyticsController:_addImpressionObject(part: BasePart)
 		return
 	end
 
-	local tagName: string = part:GetAttribute(IMPRESSION_ATTRIBUTE_NAME) or part.Name
+	local tagName = part:GetAttribute(IMPRESSION_ATTRIBUTE_NAME) :: string or part.Name
 
 	self._impressionParts[#self._impressionParts + 1] = {
 		part = part,

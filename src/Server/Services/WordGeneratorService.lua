@@ -15,9 +15,9 @@ local Data = ServerStorage:WaitForChild("Data")
 local WordDB = require(Data.WordDB)
 
 local NUM_WORDS = {
-	[Enums.RaceLevels.EASY] = 5,
-	[Enums.RaceLevels.MEDIUM] = 50,
-	[Enums.RaceLevels.HARD] = 100,
+	[Enums.RaceLevels.EASY] = 25,
+	[Enums.RaceLevels.MEDIUM] = 35,
+	[Enums.RaceLevels.HARD] = 50,
 }
 local WordGeneratorService = Knit.CreateService({
 	Name = script.Name,
@@ -28,7 +28,6 @@ function WordGeneratorService:KnitStart() end
 
 function WordGeneratorService:GenerateWord(): string
 	return WordDB[math.random(1, #WordDB)]
-	--self.Client.WordGenerated:FireAll(self.Word)
 end
 
 function WordGeneratorService:GenerateStringOfRandomWords(level: number): string
@@ -42,6 +41,17 @@ function WordGeneratorService:GenerateStringOfRandomWords(level: number): string
 	return generatedString
 end
 
-function WordGeneratorService:KnitInit() end
+function WordGeneratorService:GenerateAIString(level: number): string
+	local sentence = self.AIService:GeminiRequest(NUM_WORDS[level])
+	sentence = string.sub(sentence, 1, string.len(sentence) - 1)
+	if sentence == "" then
+		sentence = self:GenerateStringOfRandomWords(NUM_WORDS[level])
+	end
+	return sentence
+end
+
+function WordGeneratorService:KnitInit()
+	self.AIService = Knit.GetService("AIService")
+end
 
 return WordGeneratorService

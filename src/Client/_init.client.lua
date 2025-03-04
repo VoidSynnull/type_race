@@ -10,6 +10,4 @@ local Knit = require(game.ReplicatedStorage.Packages.Knit)
 Knit.AddControllers(PlayerScripts:WaitForChild("Controllers"))
 -- load interfaces
 -- Knit.AddControllers(PlayerScripts.Controllers:WaitForChild("Interface"))
-print("added knit controllers")
 Knit.Start():catch()
-print("loaded knit client")

@@ -9,33 +9,47 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
 local Enums = require(ReplicatedStorage.Shared.Enums)
+local Types = require(ReplicatedStorage.Shared.Types)
 
 local TypingService = Knit.CreateService({
 	Name = script.Name,
 	Client = { StringGenerated = Knit.CreateSignal() },
 })
 
-function TypingService:KnitStart() end
+function TypingService:KnitStart()
+	self.NextAIString = ""
+	task.spawn(function()
+		self.NextAIString = self.WordGeneratorService:GenerateAIString(math.random(1, 3))
+	end)
+end
 
 function TypingService:SetRoundString()
-	self.ActiveString = self.WordGeneratorService:GenerateStringOfRandomWords(Enums.RaceLevels.EASY)
-	self.Client.StringGenerated:FireAll(self.ActiveString)
+	if self.NextAIString ~= "" then
+		self.ActiveString = self.NextAIString
+		self.NextAIString = ""
+		task.spawn(function()
+			self.NextAIString = self.WordGeneratorService:GenerateAIString(math.random(1, 3))
+		end)
+	else
+		self.ActiveString = self.WordGeneratorService:GenerateStringOfRandomWords(math.random(1, 3))
+	end
+	for _, player in self.RoundService.ActivePlayers do
+		self.Client.StringGenerated:Fire(player, self.ActiveString)
+	end
 end
 
 function TypingService:GetRoundString()
 	return self.ActiveString
 end
 
-function TypingService:CheckPlayerInputAgainstActiveWords(playerString: string)
-	if playerString == self.ActiveString then
-		print("player was correct")
+function TypingService:CheckForWin(player: Player, data)
+	if self.RoundService:GetPlayerResults(player) then
+		return
 	end
-end
-
-function TypingService:CheckForWin(player: Player, playerString: string)
-	if playerString == self.ActiveString then
-		print(player.Name .. " won.")
-		self.RoundService:EndRace()
+	if data.TypedString == self.ActiveString then
+		local wpm = self:CalculateWPM(data.TypedString, tick() - self.RoundService.RaceStartTime)
+		data.WPM = wpm
+		self.RoundService:AddPlayerResult(player, data)
 		return true
 	else
 		return false
@@ -47,23 +61,21 @@ function TypingService:CalculateWPM(typedString: string, seconds: number): numbe
 	return wpm
 end
 
-function TypingService:CheckPlayerString(player: Player, playerString: string)
-	print(playerString, string.sub(self:GetRoundString(), 1, string.len(playerString)))
-	if playerString ~= string.sub(self:GetRoundString(), 1, string.len(playerString)) then
-		print("CHEATER DETECTED: " .. player.Name)
+function TypingService:CheckPlayerString(player: Player, data: Types.RaceResults)
+	if data.TypedString ~= string.sub(self:GetRoundString(), 1, string.len(data.TypedString)) then
+		player:Kick("Cheating detected.")
+		self.RoundService:RemovePlayerFromGame(player)
 		return false
 	else
-		print(player.Name .. " did not cheat")
-		local wpm = self:CalculateWPM(playerString, self.RoundService.RaceTime)
-		print("WPM: " .. tostring(wpm))
-		self.RoundService:AddPlayerResult(player, wpm)
+		data.WPM = self:CalculateWPM(data.TypedString, tick() - self.RoundService.RaceStartTime)
+		self.RoundService:AddPlayerResult(player, data)
 		return true
 	end
 end
 
 -- client
-function TypingService.Client:CheckPlayerString(player: Player, playerString: string)
-	return self.Server:CheckPlayerString(player, playerString)
+function TypingService.Client:CheckPlayerString(player: Player, data)
+	return self.Server:CheckPlayerString(player, data)
 end
 function TypingService.Client:CheckForWin(player: Player, playerString: string)
 	return self.Server:CheckForWin(player, playerString)

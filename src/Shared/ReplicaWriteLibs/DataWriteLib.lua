@@ -18,6 +18,22 @@ local ShopData = require(Shared.ShopData)
 
 -- verify these on the server and stuff
 local DataWriteLib = {
+
+	SetWPM = function(replica, newWPM)
+		local existingWPM = replica.Data.WPM
+		if existingWPM < newWPM then
+			replica:SetValue({ "WPM" }, newWPM)
+		end
+	end,
+
+	AddWin = function(replica)
+		replica:IncrementValue({ "Wins" }, 1)
+	end,
+
+	AddPlay = function(replica)
+		replica:IncrementValue({ "TotalPlays" }, 1)
+	end,
+
 	IncrementCurrency = function(replica, amount)
 		replica:IncrementValue({ "Currency" }, amount)
 	end,
@@ -51,8 +67,6 @@ local DataWriteLib = {
 				replica:Write("IncrementCurrency", -price)
 				--// get item data to insert (if unique, more work required. generic, just insert item id w/ amount increment)
 				replica:Write("AddItemToInv", shopid, itemamt)
-				print("Added item to inventory: " .. shopid)
-				print(replica.Data.Currency)
 				return true
 			else
 				warn("Not enough currency, missing " .. tostring(price - replica.Data.Currency))

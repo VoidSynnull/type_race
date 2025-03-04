@@ -18,7 +18,7 @@ local AIService = Knit.CreateService({
 	Client = {},
 })
 
-function AIService:GeminiRequest()
+function AIService:GeminiRequest(numWords: number)
 	local API_KEY = "AIzaSyAd1gECsPzqcg_HBnxAWz3GIjXSCtj6sSk"
 	local API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="
 		.. API_KEY
@@ -30,7 +30,7 @@ function AIService:GeminiRequest()
 					text = "Generate a random sentence about "
 						.. self.WordGeneratorService:GenerateWord()
 						.. " in "
-						.. tostring(math.random(20, 35))
+						.. tostring(numWords + math.random(0, 8))
 						.. " words.",
 				},
 			},
@@ -45,7 +45,6 @@ function AIService:GeminiRequest()
 		["Content-Type"] = "application/json",
 		--["Authorization"] = "Bearer " .. API_KEY,
 	}
-
 	-- Send HTTP Request
 	local success, response = pcall(function()
 		--return HttpService:Request(API_URL, requestJson, Enum.HttpContentType.ApplicationJson, false, headers)
@@ -55,17 +54,24 @@ function AIService:GeminiRequest()
 			["Headers"] = headers,
 			["Body"] = requestJson,
 		})
-		--print(response)
 		return response
 	end)
 
 	-- Handle Response
+
 	if success then
 		local decodedResponse = HttpService:JSONDecode(response["Body"])
-		print(decodedResponse["candidates"][1]["content"]["parts"][1]["text"]) -- Print ChatGPT's response
-		--print(response["Body"]["candidates"]["content"]["parts"]["text"])
+		if decodedResponse["error"] then
+			print(
+				"Gemini error code: " .. decodedResponse["error"]["code"] .. " " .. decodedResponse["error"]["message"]
+			)
+			return ""
+		else
+			return decodedResponse["candidates"][1]["content"]["parts"][1]["text"]
+		end
 	else
 		warn("Failed to make request:", response)
+		return ""
 	end
 end
 
@@ -101,29 +107,18 @@ function AIService:ChatGPTRequest()
 			["Headers"] = headers,
 			["Body"] = requestJson,
 		})
-		print(response)
 		return response
 	end)
 
 	-- Handle Response
 	if success then
 		local decodedResponse = HttpService:JSONDecode(response)
-		print(decodedResponse) -- Print ChatGPT's response
 	else
 		warn("Failed to make request:", response)
 	end
 end
 
-function AIService:KnitStart()
-	Players.PlayerAdded:Connect(function(player)
-		task.wait(3)
-		self:GeminiRequest()
-		task.wait(3)
-		self:GeminiRequest()
-		task.wait(3)
-		self:GeminiRequest()
-	end)
-end
+function AIService:KnitStart() end
 
 function AIService:KnitInit()
 	self.WordGeneratorService = Knit.GetService("WordGeneratorService")

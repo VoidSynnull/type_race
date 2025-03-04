@@ -135,7 +135,11 @@ do
 				end
 			end)
 			while instance == nil do
-				if start_time ~= nil and os.clock() - start_time > 1 and (RunService:IsServer() == true or game:IsLoaded() == true) then
+				if
+					start_time ~= nil
+					and os.clock() - start_time > 1
+					and (RunService:IsServer() == true or game:IsLoaded() == true)
+				then
 					start_time = nil
 					warn(
 						"["
@@ -315,7 +319,13 @@ local function GetWriteLibFunctionsRecursive(list_table, pointer, name_stack)
 			table.insert(list_table, { name_stack .. key, value })
 		else
 			error(
-				'[ReplicaController]: Invalid write function value "' .. tostring(value) .. '" (' .. typeof(value) .. '); name_stack = "' .. name_stack .. '"'
+				'[ReplicaController]: Invalid write function value "'
+					.. tostring(value)
+					.. '" ('
+					.. typeof(value)
+					.. '); name_stack = "'
+					.. name_stack
+					.. '"'
 			)
 		end
 	end
@@ -784,7 +794,12 @@ function Replica:ListenToChange(path, listener) --> [ScriptConnection] listener(
 	local listeners = CreateTableListenerPathIndex(self, path_array, 2)
 	table.insert(listeners, listener)
 	-- ScriptConnection which allows the disconnection of the listener:
-	return Madwork.NewArrayScriptConnection(listeners, listener, CleanTableListenerTable, { self._table_listeners, path_array })
+	return Madwork.NewArrayScriptConnection(
+		listeners,
+		listener,
+		CleanTableListenerTable,
+		{ self._table_listeners, path_array }
+	)
 end
 
 function Replica:ListenToNewKey(path, listener) --> [ScriptConnection] listener(new_value, new_key)
@@ -800,7 +815,12 @@ function Replica:ListenToNewKey(path, listener) --> [ScriptConnection] listener(
 	if #path_array == 0 then
 		return Madwork.NewArrayScriptConnection(listeners, listener)
 	else
-		return Madwork.NewArrayScriptConnection(listeners, listener, CleanTableListenerTable, { self._table_listeners, path_array })
+		return Madwork.NewArrayScriptConnection(
+			listeners,
+			listener,
+			CleanTableListenerTable,
+			{ self._table_listeners, path_array }
+		)
 	end
 end
 
@@ -817,7 +837,12 @@ function Replica:ListenToArrayInsert(path, listener) --> [ScriptConnection] list
 	if #path_array == 0 then
 		return Madwork.NewArrayScriptConnection(listeners, listener)
 	else
-		return Madwork.NewArrayScriptConnection(listeners, listener, CleanTableListenerTable, { self._table_listeners, path_array })
+		return Madwork.NewArrayScriptConnection(
+			listeners,
+			listener,
+			CleanTableListenerTable,
+			{ self._table_listeners, path_array }
+		)
 	end
 end
 
@@ -834,7 +859,12 @@ function Replica:ListenToArraySet(path, listener) --> [ScriptConnection] listene
 	if #path_array == 0 then
 		return Madwork.NewArrayScriptConnection(listeners, listener)
 	else
-		return Madwork.NewArrayScriptConnection(listeners, listener, CleanTableListenerTable, { self._table_listeners, path_array })
+		return Madwork.NewArrayScriptConnection(
+			listeners,
+			listener,
+			CleanTableListenerTable,
+			{ self._table_listeners, path_array }
+		)
 	end
 end
 
@@ -851,7 +881,12 @@ function Replica:ListenToArrayRemove(path, listener) --> [ScriptConnection] list
 	if #path_array == 0 then
 		return Madwork.NewArrayScriptConnection(listeners, listener)
 	else
-		return Madwork.NewArrayScriptConnection(listeners, listener, CleanTableListenerTable, { self._table_listeners, path_array })
+		return Madwork.NewArrayScriptConnection(
+			listeners,
+			listener,
+			CleanTableListenerTable,
+			{ self._table_listeners, path_array }
+		)
 	end
 end
 
@@ -865,7 +900,11 @@ function Replica:ListenToWrite(function_name, listener) --> [ScriptConnection] l
 
 	local func_id = self._write_lib_dictionary[function_name]
 	if func_id == nil then
-		error('[ReplicaController]: Write function "' .. function_name .. '" not declared inside _write_lib of this replica')
+		error(
+			'[ReplicaController]: Write function "'
+				.. function_name
+				.. '" not declared inside _write_lib of this replica'
+		)
 	end
 
 	-- Getting listener table for given path:
@@ -1050,7 +1089,9 @@ function ReplicaController.ReplicaOfClassCreated(replica_class, listener) --> [S
 		error("[ReplicaController]: replica_class must be a string")
 	end
 	if type(listener) ~= "function" then
-		error("[ReplicaController]: Only a function can be set as listener in ReplicaController.ReplicaOfClassCreated()")
+		error(
+			"[ReplicaController]: Only a function can be set as listener in ReplicaController.ReplicaOfClassCreated()"
+		)
 	end
 	-- Getting listener table for replica class:
 	local signal = ClassListeners[replica_class]
@@ -1075,7 +1116,6 @@ end
 -- Fired from server after initial data is sent:
 rev_ReplicaRequestData.OnClientEvent:Connect(function()
 	ReplicaController.InitialDataReceived = true
-	print("[ReplicaController]: Initial data received")
 	ReplicaController.InitialDataReceivedSignal:Fire()
 end)
 
@@ -1137,8 +1177,9 @@ rev_ReplicaSetParent.OnClientEvent:Connect(function(replica_id, parent_replica_i
 end)
 
 -- Replica creation:
-rev_ReplicaCreate.OnClientEvent:Connect(function(param1, param2) -- (top_replica_id, {replica_data}) OR (top_replica_id, {creation_data}) or ({replica_package})
-	--[[
+rev_ReplicaCreate.OnClientEvent:Connect(
+	function(param1, param2) -- (top_replica_id, {replica_data}) OR (top_replica_id, {creation_data}) or ({replica_package})
+		--[[
 	param1 description:
 		top_replica_id = replica_id
 		OR
@@ -1148,45 +1189,46 @@ rev_ReplicaCreate.OnClientEvent:Connect(function(param1, param2) -- (top_replica
 		OR
 		creation_data = {["replica_id"] = replica_data, ...}
 	--]]
-	local created_replicas = {}
-	-- Unpacking replica data:
-	if type(param1) == "table" then -- Replica package
-		table.sort(param1, function(a, b) -- Sorting top level replicas by their id
-			return a[1] < b[1]
-		end)
-		for _, replica_branch_entry in ipairs(param1) do
-			CreateReplicaBranch(replica_branch_entry[2], created_replicas)
+		local created_replicas = {}
+		-- Unpacking replica data:
+		if type(param1) == "table" then -- Replica package
+			table.sort(param1, function(a, b) -- Sorting top level replicas by their id
+				return a[1] < b[1]
+			end)
+			for _, replica_branch_entry in ipairs(param1) do
+				CreateReplicaBranch(replica_branch_entry[2], created_replicas)
+			end
+		elseif param2[1] ~= nil then -- One replica data
+			CreateReplicaBranch({ [tostring(param1)] = param2 }, created_replicas)
+		else -- Creation data table
+			CreateReplicaBranch(param2, created_replicas)
 		end
-	elseif param2[1] ~= nil then -- One replica data
-		CreateReplicaBranch({ [tostring(param1)] = param2 }, created_replicas)
-	else -- Creation data table
-		CreateReplicaBranch(param2, created_replicas)
-	end
-	-- Broadcasting replica creation:
-	table.sort(created_replicas, function(a, b)
-		return a.Id < b.Id
-	end)
-	-- 1) Child added:
-	for _, replica in ipairs(created_replicas) do
-		local parent_replica = replica.Parent
-		if parent_replica ~= nil then
-			local child_listener_table = ChildListeners[parent_replica.Id]
-			if child_listener_table ~= nil then
-				for i = 1, #child_listener_table do
-					child_listener_table[i](replica)
+		-- Broadcasting replica creation:
+		table.sort(created_replicas, function(a, b)
+			return a.Id < b.Id
+		end)
+		-- 1) Child added:
+		for _, replica in ipairs(created_replicas) do
+			local parent_replica = replica.Parent
+			if parent_replica ~= nil then
+				local child_listener_table = ChildListeners[parent_replica.Id]
+				if child_listener_table ~= nil then
+					for i = 1, #child_listener_table do
+						child_listener_table[i](replica)
+					end
 				end
 			end
 		end
-	end
-	-- 2) New Replica and Replica of class created:
-	for _, replica in ipairs(created_replicas) do
-		NewReplicaSignal:Fire(replica)
-		local class_listener_signal = ClassListeners[replica.Class]
-		if class_listener_signal ~= nil then
-			class_listener_signal:Fire(replica)
+		-- 2) New Replica and Replica of class created:
+		for _, replica in ipairs(created_replicas) do
+			NewReplicaSignal:Fire(replica)
+			local class_listener_signal = ClassListeners[replica.Class]
+			if class_listener_signal ~= nil then
+				class_listener_signal:Fire(replica)
+			end
 		end
 	end
-end)
+)
 
 -- Replica destruction:
 rev_ReplicaDestroy.OnClientEvent:Connect(function(replica_id) -- (replica_id)

@@ -13,11 +13,6 @@ AnimationPlayer.ClassName = "AnimationPlayer"
 -- @tparam Humanoid Humanoid
 function AnimationPlayer.new(Humanoid)
 	local self = setmetatable({}, AnimationPlayer)
-	-- if type(Humanoid) == "table" then
-	-- 	for i, v in pairs(Humanoid) do
-	-- 		print(i, v)
-	-- 	end
-	-- end
 	self.Humanoid = Humanoid or error("No Humanoid")
 	self.Animator = Humanoid:WaitForChild("Animator")
 	self.Tracks = {}

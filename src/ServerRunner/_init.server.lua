@@ -7,4 +7,3 @@ local Knit = require(game.ReplicatedStorage.Packages.Knit)
 
 Knit.AddServices(ServerStorage:WaitForChild("Services"))
 Knit.Start():catch()
-print("loaded knit server")

@@ -29,8 +29,9 @@ PlayerContainer.Tag = "PlayerContainer"
 
 -- // Edit your player data here!
 local TEMPLATE_DATA = {
-	Currency = 10,
-	Inventory = {},
+	Wins = 0,
+	TotalPlays = 0,
+	WPM = 0,
 }
 
 local FORCE_MOCK_STORE = false
@@ -40,7 +41,6 @@ local CURRENT_DATA_VERSION = 1
 local ProfileStore = ProfileService.GetProfileStore(DATASTORE_NAME .. CURRENT_DATA_VERSION, TEMPLATE_DATA)
 if game:GetService("RunService"):IsStudio() or FORCE_MOCK_STORE then
 	ProfileStore = ProfileStore.Mock
-	print("Using mock Profiles")
 end
 
 local PlayerProfileClassToken = ReplicaService.NewClassToken("PlayerProfile")
@@ -114,7 +114,6 @@ function PlayerContainer.new(player: Player?): PlayerContainer
 	if player ~= nil then
 		playerName = player.Name
 	end
-	print("[PlayerContainer] Created new container:", playerName)
 
 	return self
 end
